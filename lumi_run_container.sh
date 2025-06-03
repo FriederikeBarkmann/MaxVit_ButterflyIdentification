@@ -3,7 +3,7 @@
 
 # LUMI data and results directories to bind
 export DATA_DIR=/flash/$SLURM_JOB_ACCOUNT/$USER/datasets
-export RESULTS_DIR=/scratch/$SLURM_JOB_ACCOUNT/$USER
+export RESULTS_DIR=/scratch/$SLURM_JOB_ACCOUNT/$USER/butterflies/results
 mkdir -p $RESULTS_DIR
 
 # Some PyTorch container with the necessary packages

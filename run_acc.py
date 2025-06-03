@@ -34,6 +34,8 @@ parser.add_argument('--base-lr', type=float, default=0.01,
                     help='Initial learning rate')
 parser.add_argument('--optimizer', type=str, default="SGD",
                     help='Optimizer to use')
+parser.add_argument('--weight-decay', type=float, default=1e-5,
+                    help='Value of weight decay for the optimizer')
 parser.add_argument('--scheduler', type=str, default="StepLR",
                     help='Learning rate scheduler to use')
 parser.add_argument('--oversampling', type=int, default=0,
@@ -97,7 +99,7 @@ def worker(args):
     set_seed(42)
 
     # Folders for results and checkpoints
-    results_folder = os.path.join(args.results_dir, "butterflies", "results",
+    results_folder = os.path.join(args.results_dir,
         f"{args.model}", SLURM_JOB_ID + "_" +
         datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))
         #datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
@@ -350,25 +352,42 @@ def worker(args):
     #print(f"Scaled base learning rate: {base_lr}\n")
 
     if (args.optimizer == "Adam"):
-        opt = torch.optim.Adam(model.parameters(), lr = base_lr)
+        opt = torch.optim.Adam(model.parameters(), lr = base_lr,
+                                weight_decay = args.weight_decay)
+    elif (args.optimizer == "AdamW"):
+        opt = torch.optim.AdamW(model.parameters(), lr = base_lr,
+                                weight_decay = args.weight_decay)
+    elif (args.optimizer == "RMSprop"):
+        opt = torch.optim.RMSprop(model.parameters(), lr = base_lr,
+                                weight_decay = args.weight_decay)
     elif (args.optimizer == "Adagrad"):
-        opt = torch.optim.Adagrad(model.parameters(), lr = base_lr)
+        opt = torch.optim.Adagrad(model.parameters(), lr = base_lr,
+                                weight_decay = args.weight_decay)
     elif (args.optimizer == "Adadelta"):
-        opt = torch.optim.Adadelta(model.parameters(), lr = base_lr)
+        opt = torch.optim.Adadelta(model.parameters(), lr = base_lr,
+                                weight_decay = args.weight_decay)
+    elif (args.optimizer == "ASGD"):
+        opt = torch.optim.ASGD(model.parameters(), lr = base_lr,
+                               weight_decay = args.weight_decay)
     else:
         opt = torch.optim.SGD(model.parameters(), lr = base_lr,
                               momentum=0.9)
 
     if (args.scheduler == "StepLR"):
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer = opt,
-                                                    step_size = 10,
-                                                    gamma = 0.1)
+                                                    step_size = 2,
+                                                    gamma = 0.75)
     elif (args.scheduler == "ReduceLROnPlateau"):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer = opt, # reduces learning when loss stops decreasing
                 mode = "min",
                 factor = 0.75, # factor by which the learning rate is scaled
                 patience = 2) # number of epochs without improvement until learning rate decreases
+    elif (args.scheduler == "CosineAnnealingLR"):
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                optimizer = opt,
+                T_max = args.epochs, # number of epochs for one cycle
+                eta_min = 1e-8)
     else:
         scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer = opt,
                                                         factor=1,
@@ -511,7 +530,8 @@ def worker(args):
     if accelerator.is_main_process:
         print(f"Total training time: {totalTime_clean}")
         # Save the complete training history
-        np.save(results_folder + "/model_history.npy", history)
+        os.makedirs(results_folder, exist_ok=True)
+        np.save(os.path.join(results_folder, "model_history.npy"), history)
 
     # Save the complete model -> error if CUDA_HOME does not exist
     #accelerator.wait_for_everyone()

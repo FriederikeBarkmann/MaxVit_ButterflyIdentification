@@ -11,8 +11,8 @@
 #SBATCH --error=/users/lindnera/slurm_out/%A_%a_%x_%j.err
 
 ##SBATCH --partition=standard-g  # Standard full-node GPU partition
-#SBATCH --partition=small-g # Fewer nodes but 3 days possible
-##SBATCH --partition=dev-g  # Dev GPU partition for shorter tests
+##SBATCH --partition=small-g # Fewer nodes but 3 days possible
+#SBATCH --partition=dev-g  # Dev GPU partition for shorter tests
 #SBATCH --exclusive  # Specify on development and small partition
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1  # or --ntasks if variable used for srun
@@ -23,8 +23,8 @@
 
 #SBATCH --mem-per-gpu=60G  # Specifiy on development partition
 
-#SBATCH --time=0-15:00:00
-##SBATCH --time=0-01:00:00
+##SBATCH --time=0-08:00:00
+#SBATCH --time=0-01:00:00
 
 ##SBATCH --array=35,36,37,38
 
