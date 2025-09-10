@@ -1,5 +1,8 @@
 # MaxVit_ButterflyIdentification
 
+**NOTE:** An updated version of the repository can be found at
+[`https://github.com/AndiLindner/butterfly_identification`](https://github.com/AndiLindner/butterfly_identification).
+
 Scripts to train a MaxViT-T model on a butterfly dataset for species identification. 
 
 A [MAxViT-T](https://arxiv.org/abs/2204.01697) model that was pre-trained on the ImageNet-1K dataset was finetuned using a dataset with over 500,000 images of 160 butterfly and moth species that occur in Austria. The dataset that was used is a subset of a dataset with over 182 species that was collected with the application ["Schmetterlinge Österreichs"](https://www.schmetterlingsapp.at/) of the foundation "Blühendes Österreich". It contains only those species with at least 50 images in the dataset. 10 % of the images were assigned as testdata with a random stratified appraoch prior to model training. 
